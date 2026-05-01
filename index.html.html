@@ -8,56 +8,33 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root { 
-    --msu-blue: #002147; 
-    --msu-gold: #FFC72C; 
-    --msu-gold-hover: #e0ac1c; 
-    --bg-gradient: linear-gradient(135deg, #00152e 0%, #002147 100%); 
-    --glass: rgba(15, 23, 42, 0.85); 
-    --glass-border: rgba(255, 199, 44, 0.3); 
-    --text-main: #f8fafc; 
-    --text-muted: #94a3b8; 
-    --danger: #ef4444; 
-    --radius: 12px; 
-  }
+  :root { --msu-blue: #002147; --msu-gold: #FFC72C; --msu-gold-hover: #e0ac1c; --bg-gradient: linear-gradient(135deg, #00152e 0%, #002147 100%); --glass: rgba(15, 23, 42, 0.85); --glass-border: rgba(255, 199, 44, 0.3); --text-main: #f8fafc; --text-muted: #94a3b8; --danger: #ef4444; --success: #10b981; --radius: 12px; }
   * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
   body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-gradient); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-  
   header { height: 70px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; background: var(--msu-blue); border-bottom: 3px solid var(--msu-gold); z-index: 10; }
-  
   .app-container { display: flex; flex: 1; overflow: hidden; }
-  
   .sidebar { width: 250px; background: rgba(0, 15, 30, 0.9); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; padding: 20px; gap: 8px; }
-  
-  .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 14px; text-align: left; border-radius: var(--radius); cursor: pointer; font-weight: 600; transition: 0.2s; }
+  .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 14px; text-align: left; border-radius: var(--radius); cursor: pointer; font-weight: 600; }
   .nav-btn.active { background: var(--msu-gold); color: #002147; }
-  
   .content { flex: 1; padding: 20px; overflow-y: auto; }
   .view-section { display: none; }
   .view-section.active { display: block; }
-  
   .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
-  
   input, select { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; color: white; margin-bottom: 10px; font-size: 14px; }
   select option { background: #002147; color: white; }
-  
   .btn { padding: 12px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; width: 100%; transition: 0.2s; }
   .btn-primary { background: var(--msu-gold); color: #002147; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  
+  .btn-danger { background: var(--danger); color: white; }
+  .mode-switch { display: flex; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--glass-border); }
+  .mode-option { flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text-muted); }
+  .mode-option.active { background: var(--msu-gold); color: #002147; }
+  .mode-option.active-out { background: var(--danger); color: white; }
   #reader { width: 100%; max-width: 400px; margin: 0 auto; border: 2px solid var(--msu-gold); border-radius: 12px; overflow: hidden; background: #000; }
-  
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { color: var(--msu-gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass-border); }
   td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-  @media (max-width: 768px) {
-    .app-container { flex-direction: column; }
-    .sidebar { width: 100%; flex-direction: row; height: auto; padding: 10px; overflow-x: auto; }
-    .nav-btn { flex: 1; padding: 8px; font-size: 10px; text-align: center; white-space: nowrap; }
-  }
+  @media (max-width: 768px) { .app-container { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; height: auto; padding: 10px; overflow-x: auto; } .nav-btn { flex: 1; padding: 8px; font-size: 10px; text-align: center; } }
 </style>
 </head>
 <body>
@@ -80,7 +57,7 @@
 
 <div class="app-container">
   <nav class="sidebar">
-    <button id="btn-dash" class="nav-btn active" onclick="nav('dashboard')">Sessions</button>
+    <button id="btn-dash" class="nav-btn active" onclick="nav('dashboard')">History</button>
     <button id="btn-scan" class="nav-btn" onclick="nav('scanner')">Scanner</button>
     <button id="btn-gen" class="nav-btn" onclick="nav('generator')">QR Generator</button>
   </nav>
@@ -94,6 +71,10 @@
     </section>
 
     <section id="view-scanner" class="view-section">
+      <div class="mode-switch">
+        <div id="modeIn" class="mode-option active" onclick="setMode('IN')">TIME IN</div>
+        <div id="modeOut" class="mode-option" onclick="setMode('OUT')">TIME OUT</div>
+      </div>
       <div id="reader"></div>
       <button id="cam-trigger" class="btn btn-primary" style="margin-top:10px" onclick="initScanner()">Start Camera</button>
       
@@ -102,9 +83,12 @@
         <div id="scanConfirm" style="display:none; margin-top:15px; border:2px solid var(--msu-gold); padding:15px; border-radius:8px; background: rgba(255,199,44,0.1)">
             <p id="scannedInfo" style="margin-top:0"></p>
             <div style="display:flex; gap:10px">
-              <button class="btn btn-primary" onclick="confirmEntry()">Confirm</button>
+              <button id="btnConfirm" class="btn btn-primary" onclick="confirmEntry()">Confirm</button>
               <button class="btn" style="color:white; border:1px solid #fff" onclick="cancelScan()">Cancel</button>
             </div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" style="font-size: 11px;" onclick="exportMergedCSV()">Export Merged Data</button>
         </div>
         <table style="margin-top:15px"><tbody id="liveLogBody"></tbody></table>
       </div>
@@ -112,55 +96,51 @@
 
     <section id="view-generator" class="view-section">
       <div class="card">
-        <h3 style="color:var(--msu-gold); margin-top:0">QR Registration</h3>
-        <input id="g_name" placeholder="Full Name (Last, First)" oninput="liveGen()">
-        <input id="g_id" placeholder="ID Number (7 Digits)" maxlength="7" oninput="this.value=this.value.replace(/[^0-9]/g,'');liveGen()">
-        
+        <h3 style="color:var(--msu-gold); margin-top:0">Registration</h3>
+        <input id="g_name" placeholder="Full Name" oninput="liveGen()">
+        <input id="g_id" placeholder="ID (7 Digits)" maxlength="7" oninput="this.value=this.value.replace(/[^0-9]/g,'');liveGen()">
         <select id="g_prog" onchange="liveGen()">
             <option value="">Select Program</option>
             <optgroup label="CBIT">
-              <option value="BSBA Marketing Management">BSBA Marketing Management</option>
-              <option value="BSBA Human Resource Management">BSBA Human Resource Management</option>
-              <option value="BS Hospitality Management">BS Hospitality Management</option>
-              <option value="BS Information Technology">BS Information Technology</option>
+                <option value="BSBA - Marketing Management">BSBA Marketing</option>
+                <option value="BSBA - HRM">BSBA HRM</option>
+                <option value="BS Hospitality Management">BS Hospitality</option>
+                <option value="BS Information Technology">BS IT</option>
             </optgroup>
             <optgroup label="CELS">
-              <option value="BS Forestry">BS Forestry</option>
-              <option value="BS Agriculture Agronomy">BS Agriculture Agronomy</option>
-              <option value="BS Agriculture Animal Science">BS Agriculture Animal Science</option>
-              <option value="BS Environmental Science">BS Environmental Science</option>
-              <option value="BS Nursing">BS Nursing</option>
+                <option value="BS Forestry">BS Forestry</option>
+                <option value="BS Agriculture - Agronomy">BSA Agronomy</option>
+                <option value="BS Agriculture - Animal Science">BSA Animal Science</option>
+                <option value="BS Environmental Science">BS Env Science</option>
+                <option value="BS Nursing">BS Nursing</option>
             </optgroup>
             <optgroup label="CESS">
-              <option value="Bachelor of Elementary Education">Bachelor of Elementary Education</option>
-              <option value="BSEd English">BSEd English</option>
-              <option value="BSEd Mathematics">BSEd Mathematics</option>
-              <option value="BSEd Sciences">BSEd Sciences</option>
+                <option value="BEED">Elem Ed</option>
+                <option value="BSED - English">BSED English</option>
+                <option value="BSED - Math">BSED Math</option>
+                <option value="BSED - Science">BSED Science</option>
             </optgroup>
             <optgroup label="CFMS">
-              <option value="BS Marine Sciences">BS Marine Sciences</option>
-              <option value="BS Fisheries">BS Fisheries</option>
-              <option value="Diploma in Fisheries Tech - Fish Processing">DFT - Fish Processing</option>
-              <option value="Diploma in Fisheries Tech - Aquaculture">DFT - Aquaculture</option>
+                <option value="BS Marine Sciences">BS Marine Sci</option>
+                <option value="BS Fisheries">BS Fisheries</option>
+                <option value="DFT - Fish Processing">DFT Fish Proc</option>
+                <option value="DFT - Aquaculture">DFT Aqua</option>
             </optgroup>
         </select>
-        
-        <canvas id="qrCanvas" style="display:block; margin:20px auto; background:white; padding:10px; border-radius: 8px;"></canvas>
-        <button id="downloadBtn" class="btn btn-primary" onclick="downloadQR()" disabled>Download QR Code</button>
+        <canvas id="qrCanvas" style="display:block; margin:20px auto; background:white; padding:10px"></canvas>
+        <button id="downloadBtn" class="btn btn-primary" onclick="downloadQR()" disabled>Download QR</button>
       </div>
     </section>
   </main>
 </div>
 
 <script>
-const DB = 'msu_naawan_attendance_db';
-let state = { sessions: [], activeId: null, scanner: null, temp: null };
+const DB = 'msu_naawan_attendance_merged_db';
+let state = { sessions: [], activeId: null, scanner: null, scanMode: 'IN', temp: null };
 const $ = id => document.getElementById(id);
 
 function handleLogin() {
-  const u = $('loginUser').value.toUpperCase();
-  const p = $('loginPass').value;
-  if((u === 'ADMIN' && p === 'admin123') || (u === 'CELS' && p === 'cels123') || (u === 'CFMS' && p === 'cfms123')) {
+  if($('loginUser').value.toUpperCase() === 'ADMIN' && $('loginPass').value === 'admin123') {
     $('loginOverlay').style.display = 'none';
     loadData();
   } else { alert('Invalid Credentials'); }
@@ -180,67 +160,76 @@ function nav(v) {
   if(v !== 'scanner') stopScanner();
 }
 
+function setMode(m) {
+  state.scanMode = m;
+  $('modeIn').className = m === 'IN' ? 'mode-option active' : 'mode-option';
+  $('modeOut').className = m === 'OUT' ? 'mode-option active active-out' : 'mode-option';
+  $('btnConfirm').className = m === 'IN' ? 'btn btn-primary' : 'btn btn-danger';
+  $('btnConfirm').textContent = m === 'IN' ? 'Confirm Time In' : 'Confirm Time Out';
+}
+
 function createSession() {
-  let name = window.prompt("Event Name:");
+  let name = window.prompt("Session Name:");
   if(!name) return;
   const s = { id: Date.now(), name, logs: [] };
   state.sessions.unshift(s);
   state.activeId = s.id;
   localStorage.setItem(DB, JSON.stringify({sessions: state.sessions}));
-  renderDash();
-  nav('scanner');
+  renderDash(); nav('scanner');
 }
 
 function renderDash() {
-  $('sessionTableBody').innerHTML = state.sessions.map(s => `
-    <tr>
-      <td><b>${s.name}</b></td>
-      <td>${s.logs.length}</td>
-      <td><button class="btn-primary" style="padding:5px 10px; width:auto; font-size:11px" onclick="openS(${s.id})">Open</button></td>
-    </tr>`).join('');
+  $('sessionTableBody').innerHTML = state.sessions.map(s => `<tr><td><b>${s.name}</b></td><td>${s.logs.length}</td><td><button onclick="openS(${s.id})">Open</button></td></tr>`).join('');
 }
 
-function openS(id) { state.activeId = id; nav('scanner'); }
+function openS(id) { state.activeId = id; nav('scanner'); renderLogs(); }
 
 async function initScanner() {
   const s = state.sessions.find(x => x.id == state.activeId);
-  if(!s) return alert("Select or start a session first.");
+  if(!s) return alert("Select a session first!");
   $('activeTitle').textContent = s.name;
   if(state.scanner) await stopScanner();
   state.scanner = new Html5Qrcode("reader");
   state.scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScan)
   .then(() => { $('cam-trigger').style.display = 'none'; })
-  .catch(() => alert("Camera blocked. Please allow permissions in settings."));
+  .catch(() => alert("Camera blocked."));
 }
 
 async function stopScanner() {
-  if(state.scanner) {
-    try { await state.scanner.stop(); } catch(e) {}
-    state.scanner = null;
-    $('cam-trigger').style.display = 'block';
-  }
+  if(state.scanner) { try { await state.scanner.stop(); } catch(e) {} state.scanner = null; $('cam-trigger').style.display = 'block'; }
 }
 
 function onScan(text) {
   state.scanner.pause();
   try {
-    const data = JSON.parse(text);
-    state.temp = data;
+    const data = JSON.parse(text); state.temp = data;
     $('scannedInfo').innerHTML = `<strong>${data.name}</strong><br>${data.id}<br>${data.prog}`;
     $('scanConfirm').style.display = 'block';
-  } catch(e) {
-    alert("Invalid MSU QR Code");
-    state.scanner.resume();
-  }
+  } catch(e) { alert("Invalid QR"); state.scanner.resume(); }
 }
 
 function confirmEntry() {
   const s = state.sessions.find(x => x.id == state.activeId);
-  const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  s.logs.unshift({ ...state.temp, time: timeStr });
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  // Find existing record for this ID in this session
+  let record = s.logs.find(l => l.id === state.temp.id);
+  
+  if (state.scanMode === 'IN') {
+    if (record && record.timeIn) return alert("Already Timed In");
+    if (!record) {
+      s.logs.unshift({ ...state.temp, timeIn: time, timeOut: '' });
+    } else {
+      record.timeIn = time;
+    }
+  } else {
+    if (!record) return alert("No Time In found for this student");
+    if (record.timeOut) return alert("Already Timed Out");
+    record.timeOut = time;
+  }
+  
   localStorage.setItem(DB, JSON.stringify({sessions: state.sessions}));
-  renderLogs();
-  cancelScan();
+  renderLogs(); cancelScan();
 }
 
 function cancelScan() { $('scanConfirm').style.display = 'none'; if(state.scanner) state.scanner.resume(); }
@@ -248,27 +237,27 @@ function cancelScan() { $('scanConfirm').style.display = 'none'; if(state.scanne
 function renderLogs() {
   const s = state.sessions.find(x => x.id == state.activeId);
   if(!s) return;
-  $('liveLogBody').innerHTML = s.logs.map(l => `<tr><td><b>${l.name}</b><br><small>${l.prog}</small></td><td style="text-align:right">${l.time}</td></tr>`).join('');
+  $('liveLogBody').innerHTML = s.logs.map(l => `<tr><td><b>${l.name}</b></td><td>IN: ${l.timeIn || '--'}</td><td>OUT: ${l.timeOut || '--'}</td></tr>`).join('');
+}
+
+function exportMergedCSV() {
+  const s = state.sessions.find(x => x.id == state.activeId);
+  if(!s || !s.logs.length) return alert("No data");
+  let csv = "Name,ID,Program,Time In,Time Out\n" + s.logs.map(l => `"${l.name}","${l.id}","${l.prog}","${l.timeIn}","${l.timeOut}"`).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `${s.name}_Attendance.csv`; a.click();
 }
 
 function liveGen() {
-  const name = $('g_name').value;
-  const id = $('g_id').value;
-  const prog = $('g_prog').value;
+  const name = $('g_name').value, id = $('g_id').value, prog = $('g_prog').value;
   if(name && id.length === 7 && prog) {
-    QRCode.toCanvas($('qrCanvas'), JSON.stringify({ name, id, prog }), { width: 200, margin: 2, color: { dark: '#002147' } });
+    QRCode.toCanvas($('qrCanvas'), JSON.stringify({ name, id, prog }), { width: 200 });
     $('downloadBtn').disabled = false;
-  } else {
-    $('downloadBtn').disabled = true;
-  }
+  } else { $('downloadBtn').disabled = true; }
 }
 
 function downloadQR() {
-  const name = $('g_name').value.replace(/\s/g, '_');
-  const link = document.createElement('a');
-  link.download = `QR_${name}.png`;
-  link.href = $('qrCanvas').toDataURL();
-  link.click();
+  const a = document.createElement('a'); a.download = `QR_${$('g_id').value}.png`; a.href = $('qrCanvas').toDataURL(); a.click();
 }
 </script>
 </body>
